@@ -226,6 +226,60 @@ extension CGContext
 
         NSUIGraphicsPopContext()
     }
+    
+    
+    public func drawAttributedText(_ attributedText: NSAttributedString, at point: CGPoint, anchor: CGPoint = CGPoint(x: 0.5, y: 0.5), angleRadians: CGFloat) {
+        var drawOffset = CGPoint()
+        
+        NSUIGraphicsPushContext(self)
+        
+        if angleRadians != 0.0 {
+            let size = attributedText.size()
+            
+            // Move the text drawing rect in a way that it always rotates around its center
+            drawOffset.x = -size.width * 0.5
+            drawOffset.y = -size.height * 0.5
+            
+            var translate = point
+            
+            // Move the "outer" rect relative to the anchor, assuming its centered
+            if anchor.x != 0.5 || anchor.y != 0.5 {
+                let rotatedSize = size.rotatedBy(radians: angleRadians)
+                
+                translate.x -= rotatedSize.width * (anchor.x - 0.5)
+                translate.y -= rotatedSize.height * (anchor.y - 0.5)
+            }
+            
+            saveGState()
+            translateBy(x: translate.x, y: translate.y)
+            rotate(by: angleRadians)
+            
+            // Draw attributed string at the calculated offset
+            attributedText.draw(with: CGRect(origin: drawOffset, size: size),
+                              options: .usesLineFragmentOrigin,
+                              context: nil)
+            
+            restoreGState()
+        } else {
+            if anchor.x != 0.0 || anchor.y != 0.0 {
+                let size = attributedText.size()
+                
+                drawOffset.x = -size.width * anchor.x
+                drawOffset.y = -size.height * anchor.y
+            }
+            
+            drawOffset.x += point.x
+            drawOffset.y += point.y
+            
+            // Draw attributed string at the calculated offset
+            let drawRect = CGRect(origin: drawOffset, size: attributedText.size())
+            attributedText.draw(with: drawRect,
+                              options: .usesLineFragmentOrigin,
+                              context: nil)
+        }
+        
+        NSUIGraphicsPopContext()
+    }
 
     private func getDrawPoint(text: String, point: CGPoint, align: TextAlignment, attributes: [NSAttributedString.Key : Any]?) -> CGPoint
     {

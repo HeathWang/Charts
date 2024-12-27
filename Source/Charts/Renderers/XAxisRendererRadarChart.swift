@@ -46,18 +46,44 @@ open class XAxisRendererRadarChart: XAxisRenderer
         for i in 0..<(chart.data?.maxEntryCountSet?.entryCount ?? 0)
         {
             let label = axis.valueFormatter?.stringForValue(Double(i), axis: axis) ?? ""
+            let originAttr = NSAttributedString(string: label, attributes: [.font: labelFont, .foregroundColor: labelTextColor])
+            let getterAttr = axis.attributeGetter?.attributedStringForLabel(
+                label,
+                originAttributed: originAttr
+            ) ?? originAttr
+            
             let angle = (sliceangle * CGFloat(i) + chart.rotationAngle).truncatingRemainder(dividingBy: 360.0)
             let p = center.moving(distance: CGFloat(chart.yRange) * factor + axis.labelRotatedWidth / 2.0, atAngle: angle)
 
-            drawLabel(context: context,
-                      formattedLabel: label,
-                      x: p.x,
-                      y: p.y - axis.labelRotatedHeight / 2.0,
-                      attributes: [.font: labelFont, .foregroundColor: labelTextColor],
-                      anchor: drawLabelAnchor,
-                      angleRadians: labelRotationAngleRadians)
+            drawLabel(
+                context: context,
+                attrString: getterAttr,
+                x: p.x,
+                y: p.y,
+                anchor: drawLabelAnchor,
+                angleRadians: labelRotationAngleRadians
+            )
         }
     }
+    
+    @objc open func drawLabel(
+        context: CGContext,
+        attrString: NSAttributedString,
+        x: CGFloat,
+        y: CGFloat,
+        anchor: CGPoint,
+        angleRadians: CGFloat)
+    {
+        context
+            .drawAttributedText(
+                attrString,
+                at: CGPoint(x: x, y: y),
+                anchor: anchor,
+                angleRadians: angleRadians
+            )
+    }
+    
+    
     
     @objc open func drawLabel(
         context: CGContext,
