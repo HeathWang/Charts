@@ -2,7 +2,7 @@
 //  DefaultAxisLabelAttributeGetter.swift
 //  DGCharts
 //
-//  Created by hb on 2024/12/27.
+//  Created by heathwang on 2024/12/27.
 //
 
 import Foundation
